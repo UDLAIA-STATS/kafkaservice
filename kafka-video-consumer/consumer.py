@@ -46,6 +46,8 @@ async def call_backend_request(session: aiohttp.ClientSession, payload: dict):
             raise Exception(f"Backend server error {status}: {text}")
         return status, text
 
+
+
 async def start_consumer():
     global consumer
     # Configuración pensada para: procesar 1 mensaje por partición y solo commitear tras éxito
@@ -132,50 +134,58 @@ async def process_message(msg: ConsumerRecord):
 
 async def consume_loop():
     """
-    Loop principal de consumo:
-      - procesa mensajes uno a uno
-      - commitea manualmente solo si process_message retorna True
-      - maneja circuit-breaker simple en caso de fallas repetidas en backend
+    Mantiene el consumidor vivo de forma indefinida.
+    Si hay errores, intenta reconectarse automáticamente.
     """
-    await start_consumer()
-    try:
-        async for msg in consumer:
-            if shutdown_event.is_set():
-                logger.info("Shutdown flagged — breaking consume loop.")
-                break
+    global consumer
+    while not shutdown_event.is_set():
+        try:
+            await start_consumer()
+            logger.info("Consumer activo y esperando mensajes...")
 
-            # Si circuit-breaker activado: pausa consumo temporalmente
-            if consecutive_failures >= CONSECUTIVE_FAILURE_THRESHOLD:
-                logger.error("Circuit-breaker: %s consecutive failures. Pausing consumption for %s seconds",
-                             consecutive_failures, CONSECUTIVE_FAILURE_PAUSE_SECONDS)
-                await asyncio.sleep(CONSECUTIVE_FAILURE_PAUSE_SECONDS)
-                # tras esperar, resetear contador para intentar de nuevo
-                # Nota: podrías implementar backoff exponencial aquí
-                # pero dejamos un reset parcial para recuperar con prudencia.
-                # No reseteamos a 0 para mantener visibilidad.
-                # consecutive_failures = 0
+            # Bucle principal de lectura
+            while not shutdown_event.is_set():
+                # Espera hasta 1 segundo por nuevos mensajes
+                result = await consumer.getmany(timeout_ms=1000)
+                if not result or len(result) == 0:
+                    continue
 
+                for tp, messages in result.items():
+                    for msg in messages:
+                        try:
+                            ok = await process_message(msg)
+                            if ok:
+                                await consumer.commit()
+                        except Exception as e:
+                            logger.exception("Error procesando mensaje: %s", e)
+                            await asyncio.sleep(2)
+
+                await asyncio.sleep(0.1)
+
+        except Exception as e:
+            logger.error(f"Error en consumer principal: {e}")
+            await asyncio.sleep(5)
+        finally:
             try:
-                ok = await process_message(msg)
-                if ok:
-                    # Commit explícito y sincrónico del offset actual
-                    try:
-                        await consumer.commit()
-                        logger.debug("Committed offset=%s partition=%s", msg.offset, msg.partition)
-                    except Exception as e:
-                        logger.error("Failed to commit offset=%s partition=%s: %s", msg.offset, msg.partition, e)
-                        # si commit falla, preferimos relanzar para que el mensaje sea re-procesado
-                        raise
-                else:
-                    # decidir qué hacer si process_message devolvió False (aquí no ocurre en impl actual)
-                    logger.info("process_message returned False, leaving offset uncommitted for retry.")
-            except Exception as e:
-                # Error transitorio: no commiteamos, dejamos que Kafka reentregue según group rebalances / retries.
-                logger.exception("Error processing message offset=%s partition=%s: %s", msg.offset, msg.partition, e)
-                # opcional: backoff corto antes de continuar
-                await asyncio.sleep(2)
+                await stop_consumer()
+            except Exception:
+                pass
+
+    logger.info("Consumer finalizado por señal de apagado.")
+
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    for s in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(s, lambda s=s: _signal_handler(s))
+
+    try:
+        loop.run_until_complete(consume_loop())
+    except KeyboardInterrupt:
+        logger.info("Interrupción manual.")
     finally:
-        await stop_consumer()
+        loop.close()
+
 
 def _signal_handler(sig):
     logger.info("Signal received: %s. Initiating shutdown.", sig)

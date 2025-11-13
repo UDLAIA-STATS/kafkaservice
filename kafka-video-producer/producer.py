@@ -21,6 +21,7 @@ USE_VIDEO_AS_KEY = os.getenv("USE_VIDEO_AS_KEY", "true").lower() == "true"
 CLIENT_ID = os.getenv("PRODUCER_CLIENT_ID", "video-producer-1")
 
 producer: AIOKafkaProducer
+shutdown_event = asyncio.Event()
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
 async def start_producer():
@@ -76,18 +77,20 @@ async def send_video(video_url: str, metadata: dict = {}):
 
 async def main():
     await start_producer()
+    logger.info("Producer inicializado y esperando eventos...")
+
     try:
-        urls = [
-            "https://firebasestorage.googleapis.com/v0/b/mybucket/o/videos%2Fgame1.mp4?alt=media&token=abc",
-            "https://firebasestorage.googleapis.com/v0/b/mybucket/o/videos%2Fgame2.mp4?alt=media&token=def",
-        ]
-        for u in urls:
-            meta = {"source": "uploader-web", "priority": "normal"}
-            res = await send_video(u, meta)
-            print("Enviado:", res)
-            await asyncio.sleep(0.1)
+        # Mantener el servicio vivo hasta recibir una señal de apagado
+        while not shutdown_event.is_set():
+            await asyncio.sleep(1)
     finally:
         await stop_producer()
+        logger.info("Producer finalizado.")
+
+
+def _signal_handler(sig):
+    logger.info(f"Signal recibido: {sig}. Cerrando producer.")
+    shutdown_event.set()
 
 if __name__ == "__main__":
     asyncio.run(main())
