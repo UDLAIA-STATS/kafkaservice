@@ -147,9 +147,6 @@ async def consume_loop():
             while not shutdown_event.is_set():
                 # Espera hasta 1 segundo por nuevos mensajes
                 result = await consumer.getmany(timeout_ms=1000)
-                if not result or len(result) == 0:
-                    continue
-
                 for tp, messages in result.items():
                     for msg in messages:
                         try:
