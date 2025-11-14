@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY . /app
 
 # Variables de entorno por defecto (puedes sobrescribir en docker-compose)
-ENV KAFKA_BOOTSTRAP=broker1:9092
-ENV KAFKA_TOPIC=videos
+ENV KAFKA_BOOTSTRAP=kafka:9093
+ENV KAFKA_TOPIC=video-topic
 
 # Si el contenedor es un service, espera a la entrada CMD
 CMD ["python", "consumer.py"]

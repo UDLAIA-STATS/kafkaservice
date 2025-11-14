@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("producer")
 load_dotenv(".env")
 
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "broker1:9092,broker2:9093,broker3:9094")
+KAFKA_BOOTSTRAP = "kafka:9092"
 TOPIC = os.getenv("KAFKA_TOPIC", "video-topic")
 USE_VIDEO_AS_KEY = os.getenv("USE_VIDEO_AS_KEY", "true").lower() == "true"
 CLIENT_ID = os.getenv("PRODUCER_CLIENT_ID", "video-producer-1")

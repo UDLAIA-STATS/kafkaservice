@@ -16,7 +16,7 @@ from utils import VideoMessage
 load_dotenv(".env")
 
 # --- Configuración desde .env (valores por defecto seguros) ---
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BROKERS", "broker1:9092,broker2:9093,broker3:9094")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BROKERS", "kafka:9093")
 TOPIC = os.getenv("KAFKA_TOPIC", "video-topic")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "video-group")
 BACKEND_ENDPOINT = os.getenv("BACKEND_ENDPOINT", "http://backend:8000/process_video")
