@@ -1,6 +1,6 @@
 services:
   kafka:
-    image: apache/kafka:3.8.0
+    image: apache/kafka:latest
     container_name: kafka
     hostname: kafka
     ports:
@@ -16,6 +16,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_COMPRESSION_TYPE: lz4
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
