@@ -4,7 +4,6 @@ import os
 import json
 import logging
 import signal
-from typing import Optional
 
 import aiohttp
 from aiokafka import AIOKafkaConsumer, ConsumerRecord
@@ -16,7 +15,7 @@ from utils import VideoMessage
 load_dotenv(".env")
 
 # --- Configuración desde .env (valores por defecto seguros) ---
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BROKERS", "kafka:9093")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BROKERS", "kafka:9092")
 TOPIC = os.getenv("KAFKA_TOPIC", "video-topic")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "video-group")
 BACKEND_ENDPOINT = os.getenv("BACKEND_ENDPOINT", "http://backend:8000/process_video")
