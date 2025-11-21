@@ -4,7 +4,6 @@ import os
 import json
 import logging
 import signal
-from typing import Optional
 
 import aiohttp
 from aiokafka import AIOKafkaConsumer, ConsumerRecord
@@ -16,7 +15,7 @@ from utils import VideoMessage
 load_dotenv(".env")
 
 # --- Configuración desde .env (valores por defecto seguros) ---
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BROKERS", "kafka:9093")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BROKERS", "kafka:9092")
 TOPIC = os.getenv("KAFKA_TOPIC", "video-topic")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "video-group")
 BACKEND_ENDPOINT = os.getenv("BACKEND_ENDPOINT", "http://backend:8000/process_video")
@@ -38,13 +37,14 @@ consecutive_failures = 0
 # Retry wrapper para llamadas al backend (retry a nivel de petición HTTP)
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
 async def call_backend_request(session: aiohttp.ClientSession, payload: dict):
-    async with session.post(BACKEND_ENDPOINT, json=payload, timeout=aiohttp.ClientTimeout(total=15)) as resp:
-        text = await resp.text()
-        status = resp.status
-        if status >= 500:
-            # provocar retry en tenacity
-            raise Exception(f"Backend server error {status}: {text}")
-        return status, text
+    return 200, "OK"  # Simulación de backend exitoso
+    # async with session.post(BACKEND_ENDPOINT, json=payload, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+    #     text = await resp.text()
+    #     status = resp.status
+    #     if status >= 500:
+    #         # provocar retry en tenacity
+    #         raise Exception(f"Backend server error {status}: {text}")
+    #     return status, text
 
 
 
