@@ -11,5 +11,6 @@ websocket_urlpatterns = [
 
 url_patterns = [
     path("post_event/", KafkaEventView.as_view()),
+    path("start-video-analysis/", StartVideoUploadView.as_view()),
     path("start-video-upload/", StartVideoUploadView.as_view()),
 ]

@@ -1,11 +1,13 @@
 import logging
 from decouple import config
 import httpx
+import backoff
 
 logger = logging.getLogger(__name__)
 
 BACKEND_ENDPOINT = config("BACKEND_ENDPOINT")
 
+@backoff.on_exception(backoff.expo, httpx.HTTPError, max_tries=3)
 def handle_video_analyzed(event: dict):
     video_name = event.get("video_name")
     match_id = event.get("match_id")

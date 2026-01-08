@@ -24,7 +24,7 @@ def handle_video_uploaded(event: dict):
     async_to_sync(channel_layer.group_send)(
         f"video_{video_id}",
         {
-            "type": "video.upload",
+            "type": "video.progress",
             "progress": progress,
             "status": status,
         }

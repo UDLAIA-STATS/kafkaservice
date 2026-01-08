@@ -6,7 +6,6 @@ from events.producer import publish_event
 
 
 class KafkaEventView(APIView):
-
     def post(self, request):
         topic = request.data.get("topic")
         payload = request.data.get("payload")
@@ -24,13 +23,30 @@ class KafkaEventView(APIView):
 
         return Response({"status": "sent"}, status=200)
 
+
+class StartVideoAnalysisView(APIView):
+
+    def post(self, request):
+
+        publish_event(
+            topic="video.analyzed",
+            event={
+                "video_name": request.data.get("video_name"),
+                "match_id": request.data.get("match_id"),
+            }
+        )
+
+        return Response({
+            "status": "El video está siendo analizado"
+        })
+
 class StartVideoUploadView(APIView):
 
     def post(self, request):
         video_id = str(uuid.uuid4())
 
         publish_event(
-            topic="video.upload",
+            topic="video.progress",
             event={
                 "video_id": video_id,
                 "status": "started",

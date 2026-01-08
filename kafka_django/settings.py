@@ -58,7 +58,24 @@ MIDDLEWARE = [
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": ["redis://127.0.0.1:6379/0"],
+            "capacity": 1500,
+            "expiry": 10,
+            },
+    },
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "kafka": {"level": "INFO", "handlers": ["console"]},
+        "events": {"level": "DEBUG", "handlers": ["console"]},
     },
 }
 
@@ -93,10 +110,10 @@ DATABASES = {
 }
 
 KAFKA_CONFIG = {
-    "BROKER": config("KAFKA_BROKER", default="localhost:9092"),
+    "BROKER": config("KAFKA_BROKER"),
     "GROUP_ID": config("KAFKA_GROUP_ID"),
     "ALLOWED_TOPICS": {
-        "video.upload",
+        "video.progress",
         "video.analyzed",
     }
 }

@@ -5,8 +5,8 @@ logger = logging.getLogger(__name__)
 
 
 TOPIC_HANDLERS = {
-    "video.upload": handle_video_uploaded,
-    "video.progress": handle_video_analyzed
+    "video.progress": handle_video_uploaded,
+    "video.analyzed": handle_video_analyzed
 }
 
 
