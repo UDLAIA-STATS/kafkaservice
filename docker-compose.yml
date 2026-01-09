@@ -1,16 +1,21 @@
 name: kafka-django
+
 services:
   redis:
+    container_name: redis
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    networks:
+      - kafka-net
+
   kafka:
     image: apache/kafka:latest
     container_name: kafka
     hostname: kafka
     ports:
-      - "9092:9092"      # Para apps externas (tu Django local)
-      - "19092:19092"    # Para apps dentro de Docker
+      - "9092:9092"
+      - "19092:19092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_BROKER_ID: 1
@@ -43,6 +48,22 @@ services:
     networks:
       - kafka-net
     restart: on-failure
+
+  web:
+    build: .
+    container_name: django-web
+    ports:
+      - "8060:8000"
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+      - redis
+    networks:
+      - kafka-net
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
 
 volumes:
   broker_data:

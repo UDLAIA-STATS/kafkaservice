@@ -2,7 +2,8 @@ import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from events.producer import publish_event 
+from events.producer import publish_event
+from events.serializers import VideoAnalyzedSerializer, VideoUploadSerializer 
 
 
 class KafkaEventView(APIView):
@@ -27,33 +28,54 @@ class KafkaEventView(APIView):
 class StartVideoAnalysisView(APIView):
 
     def post(self, request):
+        try:
+            serializer = VideoAnalyzedSerializer(data=request.data)
 
-        publish_event(
-            topic="video.analyzed",
-            event={
+            if not serializer.is_valid():
+                raise ValueError(serializer.errors)
+
+            publish_event(
+                topic="video.analyzed",
+                event={
+                    "video_name": request.data.get("video_name"),
+                    "match_id": request.data.get("match_id"),
+                }
+            )
+
+            return Response({
+                "status": "El video está siendo analizado",
                 "video_name": request.data.get("video_name"),
                 "match_id": request.data.get("match_id"),
-            }
-        )
-
-        return Response({
-            "status": "El video está siendo analizado"
-        })
+            })
+        except ValueError as e:
+            return Response({"error": str(e)}, status=400)
 
 class StartVideoUploadView(APIView):
 
     def post(self, request):
-        video_id = str(uuid.uuid4())
+        try:
+            serializer = VideoUploadSerializer(data=request.data)
 
-        publish_event(
-            topic="video.progress",
-            event={
+            if not serializer.is_valid():
+                raise ValueError(serializer.errors)
+            
+            video_id = request.data.get("video_id")
+            status = request.data.get("status")
+            progres = request.data.get("progress")
+
+            publish_event(
+                topic="video.progress",
+                event={
+                    "video_id": video_id,
+                    "status": status,
+                    "progress": progres,
+                }
+            )
+
+            return Response({
                 "video_id": video_id,
-                "status": "started",
-                "progress": 0,
-            }
-        )
-
-        return Response({
-            "video_id": video_id
-        })
+                "status": status,
+                "progress": progres,
+            })
+        except ValueError as e:
+            return Response({"error": str(e)}, status=400)

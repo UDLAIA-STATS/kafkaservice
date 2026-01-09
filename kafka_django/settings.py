@@ -12,9 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
-from django.core.management.commands.runserver import Command as rs
-
-rs.default_port = '8060'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,7 +57,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": ["redis://127.0.0.1:6379/0"],
+            "hosts": [config("REDIS_URL")],
             "capacity": 1500,
             "expiry": 10,
             },
@@ -97,6 +94,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'kafka_django.wsgi.application'
+ASGI_APPLICATION = 'kafka_django.asgi.application'
 
 
 # Database

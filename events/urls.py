@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 
 from events.consumer import VideoProgressConsumer
-from events.views import KafkaEventView, StartVideoUploadView
+from events.views import KafkaEventView, StartVideoUploadView, StartVideoAnalysisView
 
 websocket_urlpatterns = [
     re_path(
@@ -9,8 +9,8 @@ websocket_urlpatterns = [
         VideoProgressConsumer.as_asgi()), #type: ignore
 ]
 
-url_patterns = [
+urlpatterns = [
     path("post_event/", KafkaEventView.as_view()),
-    path("start-video-analysis/", StartVideoUploadView.as_view()),
+    path("start-video-analysis/", StartVideoAnalysisView.as_view()),
     path("start-video-upload/", StartVideoUploadView.as_view()),
 ]
