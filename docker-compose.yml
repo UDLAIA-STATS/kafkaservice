@@ -28,6 +28,11 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_COMPRESSION_TYPE: lz4
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SESSION_TIMEOUT_MS: 30000
+      KAFKA_HEARTBEAT_INTERVAL_MS: 10000
+      KAFKA_MAX_POLL_INTERVAL_MS: 300000
+      KAFKA_MAX_POLL_RECORDS: 50
+      
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - broker_data:/var/lib/kafka/data
@@ -51,7 +56,7 @@ services:
 
   web:
     build: .
-    container_name: django-web
+    container_name: kafka-service
     ports:
       - "8060:8000"
     env_file:

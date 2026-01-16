@@ -1,49 +1,75 @@
-# Kafka Video Processing Service
+# Kafka WebSocket Service - Django Channels + Kafka Integration
 
 ## 📋 Descripción General
 
-Este proyecto implementa un servicio de procesamiento de videos basado en Apache Kafka que permite recibir URLs de videos a través de una API REST, procesarlos de manera asíncrona y distribuida, y enviar los resultados a un backend configurado.
+Este proyecto implementa una plataforma ligera que expone API REST para iniciar tareas de video, publica el progreso en Kafka y lo retransmite en tiempo real por WebSocket a cualquier cliente conectado.
+
+### Stack Tecnológico
+
+- **Django 6.0.1** + **Django Channels 4.3.2** para WebSockets
+- **Apache Kafka** (single broker con KRaft) para mensajería asíncrona
+- **Redis 7** como backend de canales para Django Channels
+- **Python 3.13** con kafka-python y compresión LZ4
+- **Docker Compose** para orquestación de servicios
 
 ### Componentes Principales
 
-- **Kafka Cluster**: 3 brokers con KRaft (sin Zookeeper) para alta disponibilidad
-- **Producer API**: API REST en FastAPI que recibe solicitudes de procesamiento
-- **Consumer**: Servicio que procesa los videos de manera asíncrona
-- **Kafka UI**: Interfaz web para monitorear el cluster de Kafka
+- **Django Web App**: API REST que publica eventos en Kafka (puerto 8060)
+- **Kafka Consumer**: Consumidor interno que lee eventos y los reenvía a grupos de canales
+- **WebSocket Server**: Empuja actualizaciones JSON en tiempo real al navegador
+- **Kafka Broker**: Broker único con compresión LZ4 habilitada
+- **Redis**: Backend de canales para comunicación entre procesos
+- **Kafka UI**: Interfaz web para monitoreo del cluster
 
-## 🏗️ Arquitectura del Sistema
+## 🏢️ Arquitectura del Sistema
 
 ```mermaid
 graph TB
-    Client[Cliente HTTP] --> API[Producer API :8080]
-    API --> Kafka[Kafka Cluster<br/>3 Brokers]
-    Kafka --> Consumer[Video Consumer]
-    Consumer --> Backend[Backend Service<br/>:8040]
-    
-    subgraph "Kafka Cluster"
-        B1[Broker 1 :9092]
-        B2[Broker 2 :9093] 
-        B3[Broker 3 :9094]
-    end
+    Client[Cliente HTTP] --> Django[Django API :8060]
+    WebClient[Cliente WebSocket] --> WS[WebSocket :8060/ws/]
+    Django --> Kafka[Kafka Broker :9092]
+    Kafka --> Consumer[Internal Consumer]
+    Consumer --> Channels[Django Channels]
+    Channels --> Redis[Redis :6379]
+    Channels --> WS
+    Consumer --> Backend[External Backend]
     
     Kafka --> UI[Kafka UI :8081]
+    
+    subgraph "Topics Kafka"
+        T1[video.progress]
+        T2[video.analyzed]
+    end
 ```
 
 ### Flujo de Procesamiento
 
-1. **Cliente** envía POST con URL del video a la API Producer
-2. **Producer** valida el payload y publica mensaje en Kafka topic
-3. **Consumer** consume mensaje del topic y descarga/procesa el video
-4. **Consumer** envía resultado al Backend configurado
-5. **Backend** recibe los datos procesados para su posterior uso
+1. **Cliente HTTP** envía POST a Django API para iniciar tarea de video
+2. **Django** publica evento en topic Kafka (`video.progress` o `video.analyzed`)
+3. **Consumer interno** lee mensaje del topic y valida el esquema
+4. **Consumer** reenvía al grupo de canales correspondiente vía Django Channels
+5. **WebSocket** empuja actualización JSON en tiempo real al cliente conectado
+6. **Para `video.analyzed`**: También envía datos al backend externo configurado
 
 ## 📋 Prerrequisitos
 
 - **Windows 10/11** con PowerShell 7.x
+- **Python 3.13+** (opcional para desarrollo local)
+- **uv** - Gestor de paquetes y entornos virtuales moderno
 - **Docker Desktop** con Docker Compose v2
 - **WSL 2** (recomendado para mejor rendimiento)
-- **Recursos mínimos**: 4GB RAM, 2 CPUs, 10GB espacio libre
-- **Puertos libres**: 8080, 8081, 9092, 9093, 9094
+- **Recursos mínimos**: 4GB RAM, 2 CPUs, 5GB espacio libre
+- **Puertos libres**: 8060, 8081, 9092, 6379
+
+### Instalación de uv
+
+```powershell
+# Instalar uv usando el instalador oficial
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Verificar instalación
+uv --version
+```
 
 ### Verificar Instalación
 
@@ -52,8 +78,9 @@ graph TB
 docker --version
 docker compose version
 
-# Verificar PowerShell
+# Verificar PowerShell y uv
 $PSVersionTable.PSVersion
+uv --version
 ```
 
 ## 🚀 Instalación y Despliegue
@@ -64,16 +91,39 @@ $PSVersionTable.PSVersion
 Set-Location C:\Users\Usuario\Desktop\projects\kafkaservice
 ```
 
-### 2. Configurar Variables de Entorno
+### 2. Configurar Entorno de Desarrollo (Opcional)
 
-El proyecto incluye un archivo `.env` preconfigurado. Revisa y ajusta si es necesario:
+Para desarrollo local, puedes sincronizar el entorno virtual con uv:
 
 ```powershell
+# Crear y sincronizar entorno virtual con todas las dependencias
+uv sync
+
+# Activar el entorno virtual
+.venv\Scripts\Activate.ps1
+
+# Verificar que Django esté instalado
+python -m django --version
+```
+
+### 3. Configurar Variables de Entorno
+
+Crea un archivo `.env` con las variables necesarias:
+
+```powershell
+# Crear archivo .env con configuración por defecto
+@'
+KAFKA_BROKER=kafka:9092
+KAFKA_GROUP_ID=video-consumer-group
+REDIS_URL=redis://redis:6379
+BACKEND_ENDPOINT=http://your-backend:8080
+'@ | Out-File -FilePath .env -Encoding utf8
+
 # Ver configuración actual
 Get-Content .env
 ```
 
-### 3. Levantar el Stack Completo
+### 4. Levantar el Stack Completo
 
 ```powershell
 # Construir imágenes locales
@@ -86,90 +136,77 @@ docker compose up -d
 docker compose ps
 ```
 
-### 4. Verificar que Todo Funciona
+### 5. Verificar que Todo Funciona
 
 ```powershell
-# Verificar logs de inicialización
-docker compose logs init-topics
+# Verificar servicios activos
+docker compose ps
 
-# Verificar APIs disponibles
-curl http://localhost:8080/health
+# Verificar Django API
+curl http://localhost:8060/api/
 curl http://localhost:8081  # Kafka UI
 
-# Ver topics creados
-docker compose exec broker1 kafka-topics --list --bootstrap-server broker1:9092
+# Ver topics creados (deberían estar video.progress y video.analyzed)
+docker compose exec kafka kafka-topics --list --bootstrap-server kafka:9092
+
+# Verificar logs del consumer Kafka
+docker compose logs django-web
 ```
 
 ## 🛠️ Servicios del Docker Compose
 
-### Kafka Cluster (3 Brokers)
+### Django Web Application
 
-- **Broker 1**: Puerto 9092, nodo líder del cluster
-- **Broker 2**: Puerto 9093, réplica
-- **Broker 3**: Puerto 9094, réplica
-- **Configuración**: KRaft mode, replicación factor 3, particiones 3
-- **Volúmenes**: Datos persistentes para cada broker
+- **Puerto**: 8060 (mapeado desde 8000 interno)
+- **Endpoints**: `/api/post_event/`, `/api/start-video-upload/`, `/api/start-video-analysis/`
+- **WebSockets**: `/ws/video-progress/{video_id}/`
+- **Función**: API REST + WebSocket server + Consumer Kafka interno
+- **Base de datos**: SQLite local para desarrollo
 
-### Init Topics
+### Kafka Broker (Single Node)
 
-- **Propósito**: Crear automáticamente el topic `video-topic`
-- **Configuración**: 3 particiones, factor de replicación 3
-- **Ejecución**: Una sola vez al inicio del stack
+- **Puerto**: 9092 (interno) y 19092 (externo)
+- **Modo**: KRaft (sin Zookeeper)
+- **Compresión**: LZ4 habilitada
+- **Topics**: `video.progress`, `video.analyzed`
+- **Volúmenes**: Datos persistentes en `broker_data`
 
-### Producer API (FastAPI)
+### Redis
 
-- **Puerto**: 8080
-- **Endpoints**: `/health`, `/publish`
-- **Función**: Recibir URLs de videos y publicarlas en Kafka
-- **Volúmenes**: Código fuente mapeado para desarrollo
-
-### Consumer
-
-- **Función**: Procesar mensajes de video de manera asíncrona
-- **Configuración**: Group ID `video-group`, procesamiento en orden
-- **Backend**: Configurable vía `BACKEND_ENDPOINT`
+- **Puerto**: 6379
+- **Función**: Backend de canales para Django Channels
+- **Configuración**: Redis 7 Alpine, sin persistencia
 
 ### Kafka UI
 
 - **Puerto**: 8081
-- **Función**: Interfaz web para monitoreo del cluster
+- **Función**: Interfaz web para monitoreo del broker
 - **Acceso**: http://localhost:8081
+- **Configuración**: Dinámica habilitada
 
-## 📡 API del Producer
+## 📡 API REST de Django
 
 ### Base URL
 ```
-http://localhost:8080
+http://localhost:8060/api/
 ```
 
-### Endpoints
+### Endpoints HTTP
 
-#### Health Check
+#### 1. Evento Genérico de Kafka
 ```http
-GET /health
-```
-
-**Respuesta:**
-```json
-{
-  "status": "ok"
-}
-```
-
-#### Publicar Video para Procesamiento
-```http
-POST /publish
+POST /api/post_event/
 Content-Type: application/json
 ```
 
 **Cuerpo de la Petición:**
 ```json
 {
-  "video_url": "https://firebasestorage.googleapis.com/v0/b/mybucket/o/videos%2Fgame1.mp4?alt=media&token=abc123",
-  "metadata": {
-    "source": "uploader-web",
-    "priority": "high",
-    "callback_url": "https://myapi.com/webhooks/video-processed"
+  "topic": "video.progress",
+  "payload": {
+    "video_id": "12345",
+    "progress": 50,
+    "status": "uploading"
   }
 }
 ```
@@ -177,17 +214,76 @@ Content-Type: application/json
 **Respuesta Exitosa (200):**
 ```json
 {
-  "status": "ok",
-  "topic": "video-topic",
-  "partition": 1,
-  "offset": 42
+  "status": "sent"
 }
 ```
 
-**Respuesta de Error (500):**
+#### 2. Iniciar Subida de Video
+```http
+POST /api/start-video-upload/
+Content-Type: application/json
+```
+
+**Cuerpo de la Petición:**
 ```json
 {
-  "detail": "Invalid video URL format"
+  "video_id": "video-123",
+  "progress": 0,
+  "status": "started"
+}
+```
+
+**Respuesta Exitosa (200):**
+```json
+{
+  "video_id": "video-123",
+  "status": "started",
+  "progress": 0
+}
+```
+
+#### 3. Iniciar Análisis de Video
+```http
+POST /api/start-video-analysis/
+Content-Type: application/json
+```
+
+**Cuerpo de la Petición:**
+```json
+{
+  "video_name": "partido_final.mp4",
+  "match_id": 12345
+}
+```
+
+**Respuesta Exitosa (200):**
+```json
+{
+  "status": "El video está siendo analizado",
+  "video_name": "partido_final.mp4",
+  "match_id": 12345
+}
+```
+
+**Respuesta de Error (400):**
+```json
+{
+  "error": "video_name es requerido"
+}
+```
+
+### WebSocket Endpoint
+
+#### Conectar al Progreso de Video
+```
+ws://localhost:8060/ws/video-progress/{video_id}/
+```
+
+**Mensajes de Progreso:**
+```json
+{
+  "progress": 75,
+  "status": "uploading"
 }
 ```
 
@@ -218,43 +314,51 @@ curl -X POST http://localhost:8080/publish \
 
 ## 📝 Formato de Mensajes Kafka
 
-### Topic: `video-topic`
+### Topic: `video.progress`
 
-#### Mensaje de Entrada (Producer → Kafka)
-
+**Estructura del Mensaje:**
 ```json
 {
-  "video_url": "https://firebasestorage.googleapis.com/v0/b/mybucket/o/videos%2Fgame1.mp4?alt=media&token=abc",
-  "metadata": {
-    "source": "uploader-web",
-    "priority": "normal",
-    "callback_url": "https://api.example.com/webhook"
-  },
-  "message_id": "550e8400-e29b-41d4-a716-446655440000",
-  "produced_at": 1699123456.789
+  "video_id": "video-123",
+  "progress": 75,
+  "status": "uploading"
 }
 ```
 
-#### Key del Mensaje
-La clave se genera a partir de la URL del video para garantizar que videos del mismo origen se procesen en orden en la misma partición.
+**Estados válidos:** `uploading`, `started`, `finished`
 
-### Payload al Backend
+**Progreso:** Entero entre 0 y 100
 
-El consumer envía al backend configurado:
+### Topic: `video.analyzed`
+
+**Estructura del Mensaje:**
+```json
+{
+  "video_name": "partido_final.mp4",
+  "match_id": 12345
+}
+```
+
+### Configuración de Topics
+
+- **Replicación:** Factor 1 (single broker)
+- **Compresión:** LZ4 habilitada en broker
+- **Auto-commit:** Habilitado desde earliest
+- **Whitelist:** Solo topics permitidos en `KAFKA_CONFIG["ALLOWED_TOPICS"]`
+
+### Payload al Backend Externo
+
+Para `video.analyzed`, el consumer envía al `BACKEND_ENDPOINT`:
 
 ```json
 {
-  "video_url": "https://firebasestorage.googleapis.com/v0/b/mybucket/o/videos%2Fgame1.mp4?alt=media&token=abc",
-  "message_id": "550e8400-e29b-41d4-a716-446655440000",
-  "produced_at": 1699123456.789,
-  "metadata": {
-    "source": "uploader-web",
-    "priority": "normal"
-  },
-  "kafka_partition": 1,
-  "kafka_offset": 42
+  "video_name": "partido_final.mp4",
+  "match_id": 12345
 }
 ```
+
+**Endpoint de destino:** `{BACKEND_ENDPOINT}/analyze/run`
+**Método:** POST con retry exponencial hasta 3 intentos
 
 ## 🔄 Flujo de Procesamiento Detallado
 
@@ -288,25 +392,27 @@ El consumer envía al backend configurado:
 
 ## ⚙️ Variables de Entorno
 
-### Kafka Configuration
-| Variable | Descripción | Valor por Defecto |
-|----------|-------------|------------------|
-| `KAFKA_BOOTSTRAP` | Brokers de Kafka | `broker1:9092,broker2:9092,broker3:9092` |
-| `KAFKA_TOPIC` | Topic principal | `video-topic` |
-| `KAFKA_GROUP_ID` | Group ID del consumer | `video-group` |
+### Configuración de Kafka
+| Variable | Descripción | Valor por Defecto | Requerido |
+|----------|-------------|------------------|----------|
+| `KAFKA_BROKER` | Dirección del broker | `kafka:9092` | Sí |
+| `KAFKA_GROUP_ID` | Group ID del consumer | `video-consumer-group` | Sí |
 
-### Producer Configuration
-| Variable | Descripción | Valor por Defecto |
-|----------|-------------|------------------|
-| `PRODUCER_CLIENT_ID` | ID del cliente productor | `video-producer-1` |
-| `PRODUCER_PORT` | Puerto del API | `8080` |
-| `USE_VIDEO_AS_KEY` | Usar URL como key | `true` |
+### Configuración de Redis
+| Variable | Descripción | Valor por Defecto | Requerido |
+|----------|-------------|------------------|----------|
+| `REDIS_URL` | URL de Redis para Channels | `redis://redis:6379` | Sí |
 
-### Consumer Configuration  
-| Variable | Descripción | Valor por Defecto |
-|----------|-------------|------------------|
-| `CONSUMER_CLIENT_ID` | ID del cliente consumer | `video-consumer-1` |
-| `BACKEND_ENDPOINT` | URL del backend destino | `http://backend:8040/process_video` |
+### Configuración del Backend Externo
+| Variable | Descripción | Valor por Defecto | Requerido |
+|----------|-------------|------------------|----------|
+| `BACKEND_ENDPOINT` | URL del backend para análisis | - | Sí |
+
+### Topics Permitidos
+
+Configurados en `settings.py`:
+- `video.progress`
+- `video.analyzed`
 
 ### Personalización
 

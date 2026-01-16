@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from events.producer import publish_event
-from events.serializers import VideoAnalyzedSerializer, VideoUploadSerializer 
+from events.serializers import UploadStatsSerializer, VideoUploadSerializer 
 
 
 class KafkaEventView(APIView):
@@ -25,26 +25,26 @@ class KafkaEventView(APIView):
         return Response({"status": "sent"}, status=200)
 
 
-class StartVideoAnalysisView(APIView):
+class UploadStatsView(APIView):
 
     def post(self, request):
         try:
-            serializer = VideoAnalyzedSerializer(data=request.data)
+            serializer = UploadStatsSerializer(data=request.data)
 
             if not serializer.is_valid():
                 raise ValueError(serializer.errors)
 
             publish_event(
-                topic="video.analyzed",
+                topic="upload.stats",
                 event={
-                    "video_name": request.data.get("video_name"),
+                    "stats": request.data.get("stats"),
                     "match_id": request.data.get("match_id"),
                 }
             )
 
             return Response({
-                "status": "El video está siendo analizado",
-                "video_name": request.data.get("video_name"),
+                "status": "Los stats están siendo procesados",
+                "stats": request.data.get("stats"),
                 "match_id": request.data.get("match_id"),
             })
         except ValueError as e:

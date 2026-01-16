@@ -112,7 +112,7 @@ KAFKA_CONFIG = {
     "GROUP_ID": config("KAFKA_GROUP_ID"),
     "ALLOWED_TOPICS": {
         "video.progress",
-        "video.analyzed",
+        "upload.stats",
     }
 }
 

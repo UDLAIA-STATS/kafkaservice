@@ -9,6 +9,7 @@ def handle_video_uploaded(event: dict):
     video_id = event.get("video_id")
     progress = event.get("progress")
     status = event.get("status", "uploading")
+    logger.info("group_send → video_%s  (type=%s)", video_id, type(video_id))
 
     if video_id is None or progress is None:
         logger.error(f"Evento inválido: {event}")

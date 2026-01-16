@@ -27,17 +27,17 @@ class VideoUploadSerializer(serializers.Serializer):
             raise serializers.ValidationError(f"status debe ser uno de {valid_statuses}")
         return obj
     
-class VideoAnalyzedSerializer(serializers.Serializer):
-    video_name = serializers.CharField()
+class UploadStatsSerializer(serializers.Serializer):
+    stats = serializers.ListField(child=serializers.DictField())
     match_id = serializers.IntegerField()
 
-    def validate_video_name(self, obj):
+    def validate_stats(self, obj):
         if not obj:
-            raise serializers.ValidationError("video_name es requerido")
-        if not isinstance(obj, str):
-            raise serializers.ValidationError("video_name debe ser una cadena")
-        if obj.strip() == "":
-            raise serializers.ValidationError("video_name no puede estar vacío")
+            raise serializers.ValidationError("stats es requerido")
+        if not isinstance(obj, list):
+            raise serializers.ValidationError("stats debe ser una lista")
+        if not all(isinstance(item, dict) for item in obj):
+            raise serializers.ValidationError("cada elemento de stats debe ser un diccionario")
         return obj
 
     def validate_match_id(self, obj):
