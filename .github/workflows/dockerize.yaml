@@ -57,7 +57,8 @@ jobs:
 
       - name: Construir imagen del microservicio Django
         run: |
-          docker build \
+          docker buildx build \
+            --load \
             -t ${{ env.IMAGE_NAME }} \
             -f Dockerfile .
 
