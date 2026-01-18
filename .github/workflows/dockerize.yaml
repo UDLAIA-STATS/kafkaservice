@@ -57,20 +57,8 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Construir imagen del microservicio Django
-        env:
-          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
-          KAFKA_GROUP_ID: ${{ secrets.KAFKA_GROUP_ID }}
-          REDIS_URL: ${{ secrets.REDIS_URL }}
-          PLAYERS_ENDPOINT: ${{ secrets.PLAYERS_ENDPOINT }}
-          TEAM_SERVICE: ${{ secrets.TEAM_SERVICE }}
         run: |
           docker build \
-            --build-arg KAFKA_BROKER=${{ env.KAFKA_BROKER }} \
-            --build-arg KAFKA_GROUP_ID=${{ env.KAFKA_GROUP_ID }} \
-            --build-arg REDIS_URL=${{ env.REDIS_URL }} \
-            --build-arg PLAYERS_ENDPOINT=${{ env.PLAYERS_ENDPOINT }} \
-            --build-arg TEAM_SERVICE=${{ env.TEAM_SERVICE }} \
-
             -t ${{ env.IMAGE_NAME }} \
             -f Dockerfile .
 
