@@ -55,20 +55,13 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: Construir imagen del microservicio Django
+      - name: Construir y subir imagen del microservicio Django
         run: |
           docker buildx build \
-            --load \
-            -t ${{ env.IMAGE_NAME }} \
+            --push \
+            --tag ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }} \
             -f Dockerfile .
 
-      - name: Etiquetar imagen
+      - name: Mostrar imagen subida
         run: |
-          docker tag ${{ env.IMAGE_NAME }} ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }}
-
-      - name: Subir imagen a DockerHub
-        run: |
-          docker push ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }}
-
-      - name: Mostrar imágenes subidas
-        run: docker images | grep ${{ env.IMAGE_NAME }}
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }}
