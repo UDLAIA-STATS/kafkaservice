@@ -1,4 +1,4 @@
-name: Deploy AuthService to DockerHub
+name: Deploy EventsService to DockerHub
 
 on:
   push:
