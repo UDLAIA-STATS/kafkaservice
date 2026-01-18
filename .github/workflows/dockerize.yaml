@@ -58,11 +58,11 @@ jobs:
 
       - name: Construir imagen del microservicio Django
         env:
-          KAFKA_BROKER:{{ secrets.KAFKA_BROKER }}
-          KAFKA_GROUP_ID:{{ secrets.KAFKA_GROUP_ID }}
-          REDIS_URL:{{ secrets.REDIS_URL }}
-          PLAYERS_ENDPOINT:{{ secrets.PLAYERS_ENDPOINT }}
-          TEAM_SERVICE: {{ secrets.TEAM_SERVICE }}
+          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
+          KAFKA_GROUP_ID: ${{ secrets.KAFKA_GROUP_ID }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          PLAYERS_ENDPOINT: ${{ secrets.PLAYERS_ENDPOINT }}
+          TEAM_SERVICE: ${{ secrets.TEAM_SERVICE }}
         run: |
           docker build \
             --build-arg KAFKA_BROKER=${{ env.KAFKA_BROKER }} \
