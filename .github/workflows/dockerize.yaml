@@ -31,10 +31,9 @@ jobs:
             path: bandit-report.json
 
   deploy:
-    needs: tests
+    needs: bandit
     runs-on: ubuntu-latest
     name: Construir y desplegar microservicio en docker
-    depends-on: bandit
 
     env:
       IMAGE_NAME: events_service
