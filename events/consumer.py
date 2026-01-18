@@ -21,6 +21,10 @@ def start_kafka_consumer():
                 bootstrap_servers=config["BROKER"],
                 group_id=config["GROUP_ID"],
                 auto_offset_reset="earliest",
+                max_poll_records=50,
+                max_poll_interval_ms=300000,
+                session_timeout_ms=30000,
+                heartbeat_interval_ms=10000,
                 enable_auto_commit=True,
                 value_deserializer=lambda v: json.loads(v.decode("utf-8")),
             )

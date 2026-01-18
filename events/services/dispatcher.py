@@ -1,12 +1,12 @@
 import logging
-from events.services import handle_video_analyzed, handle_video_uploaded
+from events.services import handle_upload_stats, handle_video_uploaded
 
 logger = logging.getLogger(__name__)
 
 
 TOPIC_HANDLERS = {
-    "video.upload": handle_video_uploaded,
-    "video.progress": handle_video_analyzed
+    "video.progress": handle_video_uploaded,
+    "upload.stats": handle_upload_stats
 }
 
 
@@ -16,5 +16,6 @@ def dispatch_event(topic: str, event: dict):
     if not handler:
         logger.warning(f"Sin handler para tópico {topic}")
         return
-
+    
+    logger.info(f"Despachando evento para tópico {topic}: {event}")
     handler(event)

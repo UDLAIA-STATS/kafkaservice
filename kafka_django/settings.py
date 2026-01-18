@@ -12,9 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
-from django.core.management.commands.runserver import Command as rs
-
-rs.default_port = '8060'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,7 +55,24 @@ MIDDLEWARE = [
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [config("REDIS_URL")],
+            "capacity": 1500,
+            "expiry": 10,
+            },
+    },
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "kafka": {"level": "INFO", "handlers": ["console"]},
+        "events": {"level": "DEBUG", "handlers": ["console"]},
     },
 }
 
@@ -80,6 +94,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'kafka_django.wsgi.application'
+ASGI_APPLICATION = 'kafka_django.asgi.application'
 
 
 # Database
@@ -93,11 +108,11 @@ DATABASES = {
 }
 
 KAFKA_CONFIG = {
-    "BROKER": config("KAFKA_BROKER", default="localhost:9092"),
+    "BROKER": config("KAFKA_BROKER"),
     "GROUP_ID": config("KAFKA_GROUP_ID"),
     "ALLOWED_TOPICS": {
-        "video.upload",
-        "video.analyzed",
+        "video.progress",
+        "upload.stats",
     }
 }
 
