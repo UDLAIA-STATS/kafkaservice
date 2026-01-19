@@ -27,7 +27,7 @@ jobs:
         - name: Ejecutar Bandit
           run: |
             bandit -r . -f json -o bandit-report.json
-            bandit -r . -f json | jq '.results[] | select(.issue_severity=="HIGH")' | if [ $(wc -l) -gt 0 ]; then exit 1; fi
+            if bandit -r . -f json | jq '.results[] | select(.issue_severity=="HIGH")' | grep -q .; then exit 1; fi
 
         - name: Subir reporte como artefacto
           uses: actions/upload-artifact@v4
@@ -70,4 +70,4 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Mostrar imágenes subidas
-        run: docker images | grep ${{ env.IMAGE_NAME }}
+        run: docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }}
