@@ -75,7 +75,7 @@ jobs:
 
       - name: Etiquetar imagen
         run: |
-          docker tag kafka-service:latest ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }}
+          docker tag kafka-django:latest ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }}
 
       - name: Push a DockerHub
         run: |
