@@ -70,4 +70,4 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Mostrar imágenes subidas
-        run: docker images | grep ${{ env.IMAGE_NAME }}
+        run: docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_NAME }}
