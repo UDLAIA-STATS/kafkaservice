@@ -63,6 +63,13 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
 
       - name: Construir imagen con docker-compose
+        env:
+          KAFKA_GROUP_ID: ${{ secrets.KAFKA_GROUP_ID }}
+          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          PLAYERS_ENDPOINT: ${{ secrets.PLAYERS_ENDPOINT }}
+          TEAM_SERVICE: ${{ secrets.TEAM_SERVICE }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
           docker-compose build web
 
