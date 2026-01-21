@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from events.producer import publish_event
 from events.serializers import UploadStatsSerializer, VideoUploadSerializer 
-
+import traceback
 
 class KafkaEventView(APIView):
     def post(self, request):
@@ -20,13 +20,13 @@ class KafkaEventView(APIView):
         try:
             publish_event(topic, payload)
         except ValueError as e:
+            traceback.print_exc()
             return Response({"error": str(e)}, status=400)
 
         return Response({"status": "sent"}, status=200)
 
 
 class UploadStatsView(APIView):
-
     def post(self, request):
         try:
             serializer = UploadStatsSerializer(data=request.data)
@@ -39,6 +39,7 @@ class UploadStatsView(APIView):
                 event={
                     "stats": request.data.get("stats"),
                     "match_id": request.data.get("match_id"),
+                    # "color": request.data.get("color"),
                 }
             )
 
@@ -48,6 +49,7 @@ class UploadStatsView(APIView):
                 "match_id": request.data.get("match_id"),
             })
         except ValueError as e:
+            traceback.print_exc()
             return Response({"error": str(e)}, status=400)
 
 class StartVideoUploadView(APIView):
@@ -78,4 +80,5 @@ class StartVideoUploadView(APIView):
                 "progress": progres,
             })
         except ValueError as e:
+            traceback.print_exc()
             return Response({"error": str(e)}, status=400)
