@@ -39,7 +39,7 @@ class UploadStatsView(APIView):
                 event={
                     "stats": request.data.get("stats"),
                     "match_id": request.data.get("match_id"),
-                    # "color": request.data.get("color"),
+                    "color": request.data.get("color"),
                 }
             )
 

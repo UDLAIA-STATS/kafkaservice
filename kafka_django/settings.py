@@ -113,6 +113,7 @@ KAFKA_CONFIG = {
     "ALLOWED_TOPICS": {
         "video.progress",
         "upload.stats",
+        "write.stats"
     }
 }
 
