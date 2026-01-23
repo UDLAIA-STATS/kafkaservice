@@ -49,3 +49,8 @@ class UploadStatsSerializer(serializers.Serializer):
         if obj <= 0:
             raise serializers.ValidationError("match_id debe ser un entero positivo")
         return obj
+
+class StartAnalysisSerializer(serializers.Serializer):
+    id_partido = serializers.IntegerField()
+    color = serializers.CharField(required=True, allow_blank=False)
+    video_id = serializers.CharField()

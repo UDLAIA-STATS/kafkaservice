@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from events.producer import publish_event
-from events.serializers import UploadStatsSerializer, VideoUploadSerializer 
+from events.serializers import StartAnalysisSerializer, UploadStatsSerializer, VideoUploadSerializer 
 import traceback
 
 class KafkaEventView(APIView):
@@ -78,6 +78,37 @@ class StartVideoUploadView(APIView):
                 "video_id": video_id,
                 "status": status,
                 "progress": progres,
+            })
+        except ValueError as e:
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=400)
+        
+class StartAnalysisView(APIView):
+
+    def post(self, request):
+        try:
+            serializer = StartAnalysisSerializer(data=request.data)
+
+            if not serializer.is_valid():
+                raise ValueError(serializer.errors)
+            
+            id_partido = request.data.get("id_partido")
+            color = request.data.get("color")
+            video_id = request.data.get("video_id")
+
+            publish_event(
+                topic="start.analysis",
+                event={
+                    "id_partido": id_partido,
+                    "color": color,
+                    "video_id": video_id,
+                }
+            )
+
+            return Response({
+                "id_partido": id_partido,
+                "color": color,
+                "video_id": video_id,
             })
         except ValueError as e:
             traceback.print_exc()
