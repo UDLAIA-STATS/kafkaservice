@@ -30,6 +30,7 @@ class VideoUploadSerializer(serializers.Serializer):
 class UploadStatsSerializer(serializers.Serializer):
     stats = serializers.ListField(child=serializers.DictField())
     match_id = serializers.IntegerField()
+    color = serializers.CharField(required=True, allow_blank=False)
 
     def validate_stats(self, obj):
         if not obj:
@@ -48,3 +49,8 @@ class UploadStatsSerializer(serializers.Serializer):
         if obj <= 0:
             raise serializers.ValidationError("match_id debe ser un entero positivo")
         return obj
+
+class StartAnalysisSerializer(serializers.Serializer):
+    id_partido = serializers.IntegerField()
+    color = serializers.CharField(required=True, allow_blank=False)
+    video_id = serializers.CharField()
