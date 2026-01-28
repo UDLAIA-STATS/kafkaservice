@@ -18,6 +18,6 @@ def dispatch_event(topic: str, event: dict):
     if not handler:
         logger.warning(f"Sin handler para tópico {topic}")
         return
-    
+
     logger.info(f"Despachando evento para tópico {topic}: {event}")
     handler(event)

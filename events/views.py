@@ -1,10 +1,14 @@
-import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from events.producer import publish_event
-from events.serializers import StartAnalysisSerializer, UploadStatsSerializer, VideoUploadSerializer 
+from events.serializers import (
+    StartAnalysisSerializer,
+    UploadStatsSerializer,
+    VideoUploadSerializer,
+)
 import traceback
+
 
 class KafkaEventView(APIView):
     def post(self, request):
@@ -40,27 +44,29 @@ class UploadStatsView(APIView):
                     "stats": request.data.get("stats"),
                     "match_id": request.data.get("match_id"),
                     "color": request.data.get("color"),
-                }
+                },
             )
 
-            return Response({
-                "status": "Los stats están siendo procesados",
-                "stats": request.data.get("stats"),
-                "match_id": request.data.get("match_id"),
-            })
+            return Response(
+                {
+                    "status": "Los stats están siendo procesados",
+                    "stats": request.data.get("stats"),
+                    "match_id": request.data.get("match_id"),
+                }
+            )
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
 
-class StartVideoUploadView(APIView):
 
+class StartVideoUploadView(APIView):
     def post(self, request):
         try:
             serializer = VideoUploadSerializer(data=request.data)
 
             if not serializer.is_valid():
                 raise ValueError(serializer.errors)
-            
+
             video_id = request.data.get("video_id")
             status = request.data.get("status")
             progres = request.data.get("progress")
@@ -71,27 +77,29 @@ class StartVideoUploadView(APIView):
                     "video_id": video_id,
                     "status": status,
                     "progress": progres,
-                }
+                },
             )
 
-            return Response({
-                "video_id": video_id,
-                "status": status,
-                "progress": progres,
-            })
+            return Response(
+                {
+                    "video_id": video_id,
+                    "status": status,
+                    "progress": progres,
+                }
+            )
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
-        
-class StartAnalysisView(APIView):
 
+
+class StartAnalysisView(APIView):
     def post(self, request):
         try:
             serializer = StartAnalysisSerializer(data=request.data)
 
             if not serializer.is_valid():
                 raise ValueError(serializer.errors)
-            
+
             id_partido = request.data.get("id_partido")
             color = request.data.get("color")
             video_id = request.data.get("video_id")
@@ -102,14 +110,16 @@ class StartAnalysisView(APIView):
                     "id_partido": id_partido,
                     "color": color,
                     "video_id": video_id,
-                }
+                },
             )
 
-            return Response({
-                "id_partido": id_partido,
-                "color": color,
-                "video_id": video_id,
-            })
+            return Response(
+                {
+                    "id_partido": id_partido,
+                    "color": color,
+                    "video_id": video_id,
+                }
+            )
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)

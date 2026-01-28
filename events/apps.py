@@ -3,9 +3,9 @@ import threading
 import os
 from events.services import logger
 from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 import asyncio
 from django.core.exceptions import ImproperlyConfigured
+
 
 class EventsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
@@ -29,9 +29,7 @@ class EventsConfig(AppConfig):
         from events.consumer import start_kafka_consumer
 
         thread = threading.Thread(
-            target=start_kafka_consumer,
-            daemon=True,
-            name="kafka-consumer-thread"
+            target=start_kafka_consumer, daemon=True, name="kafka-consumer-thread"
         )
         thread.start()
 
