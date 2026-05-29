@@ -32,21 +32,17 @@ def start_kafka_consumer():
             logger.info(f"Kafka consumer escuchando: {topics}")
 
             for message in consumer:
-                dispatch_event(
-                    topic=message.topic,
-                    event=message.value
-                )
+                dispatch_event(topic=message.topic, event=message.value)
 
         except Exception:
             logger.exception("Error en Kafka consumer")
             time.sleep(5)
 
+
 # consumers.py
 
 
-
 class VideoProgressConsumer(AsyncWebsocketConsumer):
-
     async def connect(self):
         url_route = self.scope.get("url_route")
         if not url_route:
@@ -69,10 +65,7 @@ class VideoProgressConsumer(AsyncWebsocketConsumer):
 
         self.group_name = f"video_{self.video_id}"
 
-        await self.channel_layer.group_add(
-            self.group_name,
-            self.channel_name
-        )
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
 
         await self.accept()
 
@@ -80,15 +73,16 @@ class VideoProgressConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, code):
         if hasattr(self, "group_name"):
-            await self.channel_layer.group_discard(
-                self.group_name,
-                self.channel_name
-            )
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
         logger.info("WebSocket desconectado")
 
     async def video_progress(self, event):
-        await self.send(text_data=json.dumps({
-            "progress": event.get("progress"),
-            "status": event.get("status"),
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "progress": event.get("progress"),
+                    "status": event.get("status"),
+                }
+            )
+        )

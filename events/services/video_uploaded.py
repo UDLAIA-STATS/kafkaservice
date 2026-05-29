@@ -14,7 +14,6 @@ def handle_video_uploaded(event: dict):
     if video_id is None or progress is None:
         logger.error(f"Evento inválido: {event}")
         return
-    
 
     channel_layer = get_channel_layer()
 
@@ -28,7 +27,7 @@ def handle_video_uploaded(event: dict):
             "type": "video.progress",
             "progress": progress,
             "status": status,
-        }
+        },
     )
 
     logger.info(f"Progreso enviado video={video_id} {progress}%")

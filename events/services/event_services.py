@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class EventsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "events"
@@ -16,11 +17,9 @@ class EventsConfig(AppConfig):
 
         from ..consumer import start_kafka_consumer
 
-        thread = threading.Thread(
-            target=start_kafka_consumer,
-            daemon=True
-        )
+        thread = threading.Thread(target=start_kafka_consumer, daemon=True)
         thread.start()
+
 
 def handle_event(event: dict):
     """
