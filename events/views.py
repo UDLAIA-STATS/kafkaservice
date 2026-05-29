@@ -99,17 +99,18 @@ class StartAnalysisView(APIView):
 
             if not serializer.is_valid():
                 raise ValueError(serializer.errors)
-
-            id_partido = request.data.get("id_partido")
+            id_partido = request.data.get("match_id")
             color = request.data.get("color")
-            video_id = request.data.get("video_id")
+            video_id = request.data.get("video_name")
+            user_id = request.data.get("user_id")
 
             publish_event(
                 topic="start.analysis",
                 event={
-                    "id_partido": id_partido,
+                    "match_id": id_partido,
                     "color": color,
-                    "video_id": video_id,
+                    "video_name": video_id,
+                    "user_id": user_id,
                 },
             )
 
