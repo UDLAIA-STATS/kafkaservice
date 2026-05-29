@@ -102,7 +102,7 @@ class StartAnalysisView(APIView):
             id_partido = request.data.get("match_id")
             color = request.data.get("color")
             video_id = request.data.get("video_name")
-            user_id = request.data.get("user_id")
+            nickname = request.data.get("nickname")
 
             publish_event(
                 topic="start.analysis",
@@ -110,7 +110,7 @@ class StartAnalysisView(APIView):
                     "match_id": id_partido,
                     "color": color,
                     "video_name": video_id,
-                    "user_id": user_id,
+                    "nickname": nickname,
                 },
             )
 
