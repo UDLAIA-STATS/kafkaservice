@@ -14,7 +14,7 @@ def handle_start_analysis(event: dict):
     match_id = event.get("match_id")
     color = event.get("color")
     video_name = event.get("video_name")
-    user_id = event.get("user_id")
+    nickname = event.get("nickname")
 
     partido_endpoint = f"{TEAMS_ENDPOINT}/partidos/{match_id}/update/"
 
@@ -33,7 +33,7 @@ def handle_start_analysis(event: dict):
                     "match_id": match_id,
                     "color": color,
                     "video_name": video_name,
-                    "user_id": user_id,
+                    "nickname": nickname,
                 },
             )
             logger.info(f"Respuesta de update partido: {update_response.status_code}")
