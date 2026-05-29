@@ -16,6 +16,6 @@ RUN apt-get update \
 COPY . /app
 
 # mismo puerto que usa el compose
-EXPOSE 8000
+EXPOSE 8060
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8060"]
