@@ -14,20 +14,32 @@ STATS_ENDPOINT = config("STATS_ENDPOINT")
 
 @backoff.on_exception(backoff.expo, httpx.HTTPError, max_tries=3)
 def handle_upload_stats(event: dict):
+
     stats = event.get("stats")
     match_id = event.get("match_id")
     target_color = event.get("color")
-    logger.info(
-        "handle_upload_stats → match_id %s  (type=%s)", match_id, type(match_id)
-    )
+    analized = event.get("analized")
+
+    player_endpoint = f"{PLAYERS_ENDPOINT}/jugadores/shirt"
+    partido_endpoint = f"{TEAMS_ENDPOINT}/partidos/{match_id}/"
+    stats_endpoint = f"{STATS_ENDPOINT}/events/bulk/"
 
     if not stats or not match_id or not target_color:
         logger.error(f"Evento inválido: {event}")
         return
 
-    player_endpoint = f"{PLAYERS_ENDPOINT}/jugadores/shirt"
-    partido_endpoint = f"{TEAMS_ENDPOINT}/partidos/{match_id}/"
-    stats_endpoint = f"{STATS_ENDPOINT}/events/bulk/"
+    with httpx.Client(timeout=30.0) as client:
+        update_response = client.post(
+            f"{partido_endpoint}update/", json={"partidosubido": analized}
+        )
+        logger.info(f"Respuesta de update partido: {update_response.status_code}")
+
+    if not analized:
+        return
+
+    logger.info(
+        "handle_upload_stats → match_id %s  (type=%s)", match_id, type(match_id)
+    )
 
     filtered_stats = filter_players_by_color(stats, target_color)
     logger.info(f"Jugadores filtrados: {len(filtered_stats)} de {len(stats)}")
@@ -40,38 +52,17 @@ def handle_upload_stats(event: dict):
             partido_response = client.get(partido_endpoint)
 
             logger.info("Informar que el partido fue subido y analizado")
-            update_response = client.post(
-                f"{partido_endpoint}update/", json={"partidosubido": True}
-            )
-            logger.info(f"Respuesta de update partido: {update_response.status_code}")
 
             partido_data = None
+
             if partido_response.status_code == 200:
                 partido_data = partido_response.json()
             else:
                 logger.error(f"No se encontró partido para match_id {match_id}")
+                return
 
         for stat in filtered_stats:
-            shirt_number = stat.get("shirt_number")
-
-            if not shirt_number or shirt_number == "" or shirt_number is None:
-                logger.warning(
-                    f"Jugador sin shirt_number reconocido: player_id={stat.get('player_id')}"
-                )
-                continue
-
-            try:
-                shirt_number = int(shirt_number)
-                if shirt_number == 0:
-                    continue
-
-            except (ValueError, TypeError):
-                logger.warning(
-                    f"Shirt_number inválido: {shirt_number}, marcando como None"
-                )
-                stat["player_id"] = None
-                processed_stats.append(stat)
-                continue
+            shirt_number = int(stat.get("shirt_number", 0))
 
             try:
                 with httpx.Client(timeout=30.0) as client:
@@ -81,10 +72,9 @@ def handle_upload_stats(event: dict):
 
                     if player_response.status_code != 200:
                         logger.warning(
-                            f"No se encontró jugador para shirt_number {shirt_number}, "
-                            "marcando como None"
+                            f"No se encontró jugador para shirt_number {shirt_number}, preservando estado"
                         )
-                        stat["player_id"] = None
+                        stat["player_id"] = 1
                         processed_stats.append(stat)
                         continue
 
@@ -96,30 +86,20 @@ def handle_upload_stats(event: dict):
                             f"El jugador con shirt_number {shirt_number} "
                             "no tiene ID, marcando como None"
                         )
-                        stat["player_id"] = None
+                        stat["player_id"] = 1
                         processed_stats.append(stat)
                         continue
 
                     stat["player_id"] = player_id
 
+                    stat["team_color"] = f"[{target_color}]"
                     if partido_data:
-                        team = int(stat["team"])
-                        if team == 1:
-                            real_team = partido_data.get("idequipolocal")
-                        else:
-                            real_team = partido_data.get("idequipovisitante")
-
-                        if real_team:
-                            stat["team"] = real_team
-                        else:
-                            logger.warning(
-                                f"No se encontró equipo para team={team}, dejando valor original"
-                            )
-                        stat["team_color"] = f'[{target_color}]'
+                        stat["team"] = partido_data.get("idequipolocal")
                     else:
                         logger.warning(
                             "No hay datos del partido, dejando team original"
                         )
+                        stat["team"] = 1
 
                     logger.info(
                         f"Procesado player_id {player_id} para shirt_number {shirt_number}"
@@ -129,12 +109,12 @@ def handle_upload_stats(event: dict):
                 logger.exception(
                     f"Error de red al procesar shirt_number {shirt_number}: {e}"
                 )
-                stat["player_id"] = None
+                stat["player_id"] = 1
             except Exception as e:
                 logger.exception(
                     f"Error inesperado al procesar shirt_number {shirt_number}: {e}"
                 )
-                stat["player_id"] = None
+                stat["player_id"] = 1
 
             processed_stats.append(stat)
 

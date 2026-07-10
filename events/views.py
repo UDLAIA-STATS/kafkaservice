@@ -44,6 +44,7 @@ class UploadStatsView(APIView):
                     "stats": request.data.get("stats"),
                     "match_id": request.data.get("match_id"),
                     "color": request.data.get("color"),
+                    "analized": request.data.get("analized"),
                 },
             )
 

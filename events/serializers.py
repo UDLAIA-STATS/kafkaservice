@@ -35,6 +35,7 @@ class UploadStatsSerializer(serializers.Serializer):
     stats = serializers.ListField(child=serializers.DictField())
     match_id = serializers.IntegerField()
     color = serializers.CharField(required=True, allow_blank=False)
+    analized = serializers.BooleanField(required=True)
 
     def validate_stats(self, obj):
         if not obj:
