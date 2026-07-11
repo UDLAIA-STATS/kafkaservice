@@ -126,9 +126,9 @@ def handle_upload_stats(event: dict):
             f"Enviando {len(processed_stats)} stats al endpoint: {stats_endpoint}"
         )
 
+        logger.info(f"Enviando payload con {len(processed_stats)} jugadores, jugadores: {processed_stats}")
         for stat in processed_stats:
             with httpx.Client(timeout=30.0) as client:
-                logger.info(f"Enviando payload con {len(processed_stats)} jugadores")
                 client.post(stats_endpoint, json=stat)
 
     except httpx.RequestError as e:
