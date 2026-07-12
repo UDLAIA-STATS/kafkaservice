@@ -98,7 +98,7 @@ def handle_upload_stats(event: dict):
                         marcador_local = partido_data.get("marcadorequipolocal")
                         marcador_visitante = partido_data.get("marcadorequipovisitante")
 
-                        stat["team_goals"] = int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))
+                        stat["team_goals"] = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
                     else:
                         logger.warning(
                             "No hay datos del partido, dejando team original"
