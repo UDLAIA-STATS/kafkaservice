@@ -76,21 +76,19 @@ def handle_upload_stats(event: dict):
                         )
                         stat["player_id"] = 1
                         processed_stats.append(stat)
-                        continue
+                    else:
+                        player_data = player_response.json()
+                        player_id = player_data.get("id")
 
-                    player_data = player_response.json()
-                    player_id = player_data.get("id")
-
-                    if not player_id:
-                        logger.warning(
-                            f"El jugador con shirt_number {shirt_number} "
-                            "no tiene ID, marcando como None"
-                        )
-                        stat["player_id"] = 1
-                        processed_stats.append(stat)
-                        continue
-
-                    stat["player_id"] = player_id
+                        if not player_id:
+                            logger.warning(
+                                f"El jugador con shirt_number {shirt_number} "
+                                "no tiene ID, marcando como None"
+                            )
+                            stat["player_id"] = 1
+                            processed_stats.append(stat)
+                        else:
+                            stat["player_id"] = player_id
 
                     stat["team_color"] = f"[{target_color}]"
                     if partido_data:
@@ -100,10 +98,6 @@ def handle_upload_stats(event: dict):
                             "No hay datos del partido, dejando team original"
                         )
                         stat["team"] = 1
-
-                    logger.info(
-                        f"Procesado player_id {player_id} para shirt_number {shirt_number}"
-                    )
 
             except httpx.RequestError as e:
                 logger.exception(
