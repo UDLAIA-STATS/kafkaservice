@@ -69,7 +69,7 @@ def handle_upload_stats(event: dict):
                 team_goals = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
                 logger.info(f"Marcador local: {marcador_local}, marcador visitante: {marcador_visitante}, team_goals: {team_goals}")
             else:
-                team_goals = random.randint(0,1)
+                team_goals = random.randint(0,1) #nosec
                 logger.info(f"Sin datos de partido, team_goals: {team_goals}")
 
         for stat in filtered_stats:
