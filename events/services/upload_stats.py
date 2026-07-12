@@ -1,4 +1,5 @@
 import logging
+import random
 from decouple import config
 import httpx
 import backoff
@@ -63,6 +64,7 @@ def handle_upload_stats(event: dict):
 
         for stat in filtered_stats:
             shirt_number = int(stat.get("shirt_number", 0))
+            stat["team_goals"] = 0
 
             try:
                 with httpx.Client(timeout=30.0) as client:
@@ -93,6 +95,10 @@ def handle_upload_stats(event: dict):
                     stat["team_color"] = f"[{target_color}]"
                     if partido_data:
                         stat["team"] = partido_data.get("idequipolocal")
+                        marcador_local = partido_data.get("marcadorequipolocal")
+                        marcador_visitante = partido_data.get("marcadorequipovisitante")
+
+                        stat["team_goals"] = int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))
                     else:
                         logger.warning(
                             "No hay datos del partido, dejando team original"
