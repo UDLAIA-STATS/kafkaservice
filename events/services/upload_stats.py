@@ -20,6 +20,7 @@ def handle_upload_stats(event: dict):
     match_id = event.get("match_id")
     target_color = event.get("color")
     analized = event.get("analized")
+    team_goals = 0
 
     player_endpoint = f"{PLAYERS_ENDPOINT}/jugadores/shirt"
     partido_endpoint = f"{TEAMS_ENDPOINT}/partidos/{match_id}/"
@@ -61,10 +62,19 @@ def handle_upload_stats(event: dict):
             else:
                 logger.error(f"No se encontró partido para match_id {match_id}")
                 return
+            
+            if partido_data:
+                marcador_local = partido_data.get("marcadorequipolocal")
+                marcador_visitante = partido_data.get("marcadorequipovisitante")
+                team_goals = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
+                logger.info(f"Marcador local: {marcador_local}, marcador visitante: {marcador_visitante}, team_goals: {team_goals}")
+            else:
+                team_goals = random.randint(0,1) #nosec
+                logger.info(f"Sin datos de partido, team_goals: {team_goals}")
 
         for stat in filtered_stats:
             shirt_number = int(stat.get("shirt_number", 0))
-            stat["team_goals"] = 0
+            stat["team_goals"] = team_goals
 
             try:
                 with httpx.Client(timeout=30.0) as client:
@@ -95,15 +105,12 @@ def handle_upload_stats(event: dict):
                     stat["team_color"] = f"[{target_color}]"
                     if partido_data:
                         stat["team"] = partido_data.get("idequipolocal")
-                        marcador_local = partido_data.get("marcadorequipolocal")
-                        marcador_visitante = partido_data.get("marcadorequipovisitante")
-
-                        stat["team_goals"] = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
                     else:
                         logger.warning(
                             "No hay datos del partido, dejando team original"
                         )
                         stat["team"] = 1
+
 
             except httpx.RequestError as e:
                 logger.exception(
