@@ -64,8 +64,8 @@ def handle_upload_stats(event: dict):
                 return
             
             if partido_data:
-                marcador_local = partido_data.get("marcadorequipolocal")
-                marcador_visitante = partido_data.get("marcadorequipovisitante")
+                marcador_local = int(partido_data.get("marcadorequipolocal", 0))
+                marcador_visitante = int(partido_data.get("marcadorequipovisitante", 0))
                 team_goals = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
                 logger.info(f"Marcador local: {marcador_local}, marcador visitante: {marcador_visitante}, team_goals: {team_goals}")
             else:
