@@ -58,7 +58,7 @@ def handle_upload_stats(event: dict):
             partido_data = None
 
             if partido_response.status_code == 200:
-                partido_data = partido_response.json()
+                partido_data = partido_response.json()["data"]
             else:
                 logger.error(f"No se encontró partido para match_id {match_id}")
                 return
@@ -66,8 +66,12 @@ def handle_upload_stats(event: dict):
             if partido_data:
                 marcador_local = int(partido_data.get("marcadorequipolocal", 0))
                 marcador_visitante = int(partido_data.get("marcadorequipovisitante", 0))
-                team_goals = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
-                logger.info(f"Marcador local: {marcador_local}, marcador visitante: {marcador_visitante}, team_goals: {team_goals}")
+
+                if marcador_local == 0 and marcador_visitante == 0:
+                    team_goals = random.randint(0,1) #nosec
+                else:
+                    team_goals = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
+                    logger.info(f"Marcador local: {marcador_local}, marcador visitante: {marcador_visitante}, team_goals: {team_goals}")
             else:
                 team_goals = random.randint(0,1) #nosec
                 logger.info(f"Sin datos de partido, team_goals: {team_goals}")
@@ -89,8 +93,8 @@ def handle_upload_stats(event: dict):
                         stat["player_id"] = 1
                         processed_stats.append(stat)
                     else:
-                        player_data = player_response.json()
-                        player_id = player_data.get("id")
+                        player_data = player_response.json()["data"]
+                        player_id = player_data.get("idjugador")
 
                         if not player_id:
                             logger.warning(
