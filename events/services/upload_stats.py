@@ -20,7 +20,6 @@ def handle_upload_stats(event: dict):
     match_id = event.get("match_id")
     target_color = event.get("color")
     analized = event.get("analized")
-    team_goals = 0
 
     player_endpoint = f"{PLAYERS_ENDPOINT}/jugadores/shirt"
     partido_endpoint = f"{TEAMS_ENDPOINT}/partidos/{match_id}/"
@@ -62,23 +61,9 @@ def handle_upload_stats(event: dict):
             else:
                 logger.error(f"No se encontró partido para match_id {match_id}")
                 return
-            
-            if partido_data:
-                marcador_local = int(partido_data.get("marcadorequipolocal", 0))
-                marcador_visitante = int(partido_data.get("marcadorequipovisitante", 0))
-
-                if marcador_local == 0 and marcador_visitante == 0:
-                    team_goals = random.randint(0,1) #nosec
-                else:
-                    team_goals = (int(random.random() * (max(marcador_local, marcador_visitante) - min(marcador_local, marcador_visitante)) + min(marcador_local, marcador_visitante))) #nosec
-                    logger.info(f"Marcador local: {marcador_local}, marcador visitante: {marcador_visitante}, team_goals: {team_goals}")
-            else:
-                team_goals = random.randint(0,1) #nosec
-                logger.info(f"Sin datos de partido, team_goals: {team_goals}")
 
         for stat in filtered_stats:
             shirt_number = int(stat.get("shirt_number", 0))
-            stat["team_goals"] = team_goals
 
             try:
                 with httpx.Client(timeout=30.0) as client:
