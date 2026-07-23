@@ -40,8 +40,7 @@ class MatchData:
 
 
 @backoff.on_exception(backoff.expo, httpx.HTTPError, max_tries=3)
-def handle_stats_by_season(event: dict):
-    season_id = event.get("season_id")
+def handle_stats_by_season(season_id: int):
     responseData: List[Dict] = []
 
     season_endpoint = f"{TEAMS_ENDPOINT}/partidos/bytemporadas/?temporadaId={season_id}&page=1&offset=10000"
