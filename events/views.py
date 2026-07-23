@@ -144,7 +144,7 @@ class GetStatsDataView(APIView):
             return Response({"error": "match_id es requerido"}, status=400)
 
         try:
-            return Response(data=handle_stats_by_season(match_id))
+            return Response(data=handle_stats_by_season({"season_id": match_id}))
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
