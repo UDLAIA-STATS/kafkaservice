@@ -138,13 +138,13 @@ class GeneralStatsView(APIView):
                 return Response({"error": str(e)}, status=400)
 
 class GetStatsDataView(APIView):
-    def get(self, request, match_id):
+    def get(self, request, temporada_id):
 
-        if not match_id:
-            return Response({"error": "match_id es requerido"}, status=400)
+        if not temporada_id:
+            return Response({"error": "temporada_id es requerido"}, status=400)
 
         try:
-            return Response(data=handle_stats_by_season({"season_id": match_id}))
+            return Response(data=handle_stats_by_season(temporada_id))
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
