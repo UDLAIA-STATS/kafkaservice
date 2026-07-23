@@ -6,12 +6,14 @@ from events.views import (
     StartAnalysisView,
     StartVideoUploadView,
     UploadStatsView,
+    GeneralStatsView,
+    GetStatsDataView
 )
 
 websocket_urlpatterns = [
     re_path(
         r"ws/video-progress/(?P<video_id>[^/]+)/$", VideoProgressConsumer.as_asgi()
-    ),  # type: ignore
+    ), # type: ignore
 ]
 
 urlpatterns = [
@@ -19,4 +21,6 @@ urlpatterns = [
     path("update-stats/", UploadStatsView.as_view()),
     path("start-video-upload/", StartVideoUploadView.as_view()),
     path("start-analysis/", StartAnalysisView.as_view()),
+    path("general-stats/", GeneralStatsView.as_view()),
+    path("get-stats-data/<int:match_id>/", GetStatsDataView.as_view()),
 ]
