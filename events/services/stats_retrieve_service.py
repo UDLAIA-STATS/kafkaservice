@@ -47,7 +47,7 @@ def handle_general_stats(event: dict):
             )
 
         matches = matches_res.json()["results"]
-        matches_ids = {match["id"]: match for match in matches}
+        matches_ids = {match["idpartido"]: match for match in matches}
 
         for stat in stats:
             match_id = stat["match_id"]
