@@ -44,8 +44,8 @@ def handle_stats_by_season(event: dict):
     season_id = event.get("season_id")
     responseData: List[Dict] = []
 
-    season_endpoint = f"{TEAMS_ENDPOINT}/partidos/bytemporadas/?temporadaId={season_id}&page=1&offset=1000"
-    stats_endpoint = f"{STATS_ENDPOINT}events/by_match"
+    season_endpoint = f"{TEAMS_ENDPOINT}/partidos/bytemporadas/?temporadaId={season_id}&page=1&offset=10000"
+    stats_endpoint = f"{STATS_ENDPOINT}/events/by_match"
 
     with httpx.Client(timeout=30.0) as client:
         matches_res = client.get(season_endpoint)
