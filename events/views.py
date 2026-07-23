@@ -9,6 +9,9 @@ from events.serializers import (
 )
 import traceback
 
+from events.services.player_stats_retrieve_service import handle_stats_by_season
+from events.services.stats_retrieve_service import handle_general_stats
+
 
 class KafkaEventView(APIView):
     def post(self, request):
@@ -122,6 +125,26 @@ class StartAnalysisView(APIView):
                     "video_id": video_id,
                 }
             )
+        except ValueError as e:
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=400)
+
+class GeneralStatsView(APIView):
+    def get(self, request):
+            try:    
+                return handle_general_stats({})
+            except ValueError as e:
+                traceback.print_exc()
+                return Response({"error": str(e)}, status=400)
+
+class GetStatsDataView(APIView):
+    def get(self, request, match_id):
+
+        if not match_id:
+            return Response({"error": "match_id es requerido"}, status=400)
+
+        try:
+            return handle_stats_by_season({"season_id": match_id})
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
