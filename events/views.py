@@ -132,7 +132,7 @@ class StartAnalysisView(APIView):
 class GeneralStatsView(APIView):
     def get(self, request):
             try:    
-                return handle_general_stats({})
+                return Response(data=handle_general_stats({}))
             except ValueError as e:
                 traceback.print_exc()
                 return Response({"error": str(e)}, status=400)
@@ -144,7 +144,7 @@ class GetStatsDataView(APIView):
             return Response({"error": "match_id es requerido"}, status=400)
 
         try:
-            return handle_stats_by_season({"season_id": match_id})
+            return Response(data=handle_stats_by_season(match_id))
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)

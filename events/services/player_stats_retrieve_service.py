@@ -65,9 +65,7 @@ def handle_stats_by_season(event: dict):
             logger.info(f"Respuesta de estadísticas: {match_stats_res.status_code}")
 
             if match_stats_res.status_code != 200:
-                raise httpx.HTTPError(
-                    f"Error al obtener estadísticas: {match_stats_res.status_code}"
-                )
+                continue
 
             match_stats = match_stats_res.json()["data"]
             match_data = MatchData(
