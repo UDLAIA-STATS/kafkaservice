@@ -67,6 +67,10 @@ def handle_stats_by_season(season_id: int):
                 continue
 
             match_stats = match_stats_res.json()["data"]
+
+            if not match_stats:
+                continue
+
             match_data = MatchData(
                 marcador=f"{match_info["marcadorequipolocal"]} - {match_info['marcadorequipovisitante']}",
                 match_date=datetime.fromisoformat(match_info["fechapartido"]).strftime(
