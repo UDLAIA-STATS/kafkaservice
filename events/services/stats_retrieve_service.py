@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from datetime import datetime
 import logging
 from typing import Dict, List
 
@@ -62,7 +63,9 @@ def handle_general_stats(event: dict):
                 temporada=match_info["temporada_nombre"],
                 resultado=marcador,
                 fecha_analisis=stat["created_at"],
-                fecha_partido=match_info["fechapartido"],
+                fecha_partido=datetime.strptime(
+                    match_info["fechapartido"], "%Y-%m-%d %H:%M:%S"
+                ).strftime("%d-%m-%Y %H:%M:%S"),
                 velocidad_promedio=stat["avg_speed"],
                 distancia_promedio=stat["avg_distance"],
             )
