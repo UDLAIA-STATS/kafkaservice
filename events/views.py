@@ -134,7 +134,12 @@ class StartAnalysisView(APIView):
 class GeneralStatsView(APIView):
     def get(self, request):
             try:    
-                return Response(data=handle_general_stats({}))
+                general_stats = cache.get("general_stats")
+                if not general_stats:
+                    general_stats = handle_general_stats({})
+                    cache.set("general_stats", general_stats, 3600)
+
+                return Response(data=general_stats)
             except ValueError as e:
                 traceback.print_exc()
                 return Response({"error": str(e)}, status=400)

@@ -28,6 +28,7 @@ class PlayerData:
     avg_speed_kmh: int
     distance_km: int
     heatmap_image_path: str
+    crop_image_path: str
 
 
 @dataclass
@@ -40,10 +41,12 @@ class MatchData:
     match_date: str
     marcador: str
     team_heatmap_image_path: str
+    movement_trajectories_path: str
     players: List[PlayerData]
 
 
 @backoff.on_exception(backoff.expo, httpx.HTTPError, max_tries=3)
+
 def handle_stats_details(season_id: int, torneo_id: int):
     responseData: List[Dict] = []
 
@@ -89,6 +92,7 @@ def handle_stats_details(season_id: int, torneo_id: int):
                 ),
                 match_id=match_info["idpartido"],
                 team_heatmap_image_path=match_stats[0]["team_heatmap_image_path"],
+                movement_trajectories_path=match_stats[0]["movement_trajectories_path"],
                 players=[
                     PlayerData(
                         analisys_date=stat["analisys_date"],
@@ -103,6 +107,7 @@ def handle_stats_details(season_id: int, torneo_id: int):
                         stat_id=stat["stat_id"],
                         team_color=stat["team_color"],
                         team_goals=stat["team_goals"],
+                        crop_image_path=stat["crop_image_path"],
                     )
                     for stat in match_stats
                 ],
