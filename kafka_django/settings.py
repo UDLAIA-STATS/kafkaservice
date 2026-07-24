@@ -65,6 +65,13 @@ CHANNEL_LAYERS = {
     },
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": config("REDIS_URL"),
+    }
+}
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

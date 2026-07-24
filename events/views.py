@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from events.producer import publish_event
+from django.core.cache import cache
 from events.serializers import (
     StartAnalysisSerializer,
     UploadStatsSerializer,
@@ -145,7 +146,13 @@ class GetStatsDataView(APIView):
             return Response({"error": "temporada_id es requerido"}, status=400)
 
         try:
-            return Response(data=handle_stats_details(temporada_id, torneo_id))
+            result = cache.get(f"stats-{temporada_id}-{torneo_id}")
+
+            if not result:
+                result =  handle_stats_details(temporada_id, torneo_id)
+                cache.set(f"stats-{temporada_id}-{torneo_id}", result, 3600)
+
+            return Response(data=result)
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
@@ -153,7 +160,8 @@ class GetStatsDataView(APIView):
 class GetStatsBySeason(APIView):
     def get(self, request):
         try:
-            return Response(data=handle_stats_by_season())
+            seasons = handle_stats_by_season()
+            return Response(data=seasons)
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
