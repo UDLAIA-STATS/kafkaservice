@@ -150,7 +150,7 @@ class GetStatsDataView(APIView):
 
             if not result:
                 result =  handle_stats_details(temporada_id, torneo_id)
-                cache.set(f"stats-{temporada_id}-{torneo_id}", result, 3600)
+                cache.set(f"stats-{temporada_id}-{torneo_id}", result, 150)
 
             return Response(data=result)
         except ValueError as e:
