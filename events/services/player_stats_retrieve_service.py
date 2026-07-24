@@ -69,9 +69,9 @@ def handle_stats_by_season(season_id: int):
             match_stats = match_stats_res.json()["data"]
             match_data = MatchData(
                 marcador=f"{match_info["marcadorequipolocal"]} - {match_info['marcadorequipovisitante']}",
-                match_date=datetime.strptime(
-                    match_info["fechapartido"], "%Y-%m-%d %H:%M:%S"
-                ).strftime("%d-%m-%Y %H:%M:%S"),
+                match_date=datetime.fromisoformat(match_info["fechapartido"]).strftime(
+                    "%d-%m-%Y %H:%M:%S"
+                ),
                 match_id=match_info["idpartido"],
                 team_heatmap_image_path=match_stats[0]["team_heatmap_image_path"],
                 players=[
