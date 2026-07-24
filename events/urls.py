@@ -7,7 +7,8 @@ from events.views import (
     StartVideoUploadView,
     UploadStatsView,
     GeneralStatsView,
-    GetStatsDataView
+    GetStatsDataView,
+    GetStatsBySeason
 )
 
 websocket_urlpatterns = [
@@ -23,4 +24,5 @@ urlpatterns = [
     path("start-analysis/", StartAnalysisView.as_view()),
     path("general-stats/", GeneralStatsView.as_view()),
     path("get-stats-data/<int:temporada_id>/<int:torneo_id>/", GetStatsDataView.as_view()),
+    path("get-stats-by-season/", GetStatsBySeason.as_view()),
 ]
