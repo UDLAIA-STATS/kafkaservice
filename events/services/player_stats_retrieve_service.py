@@ -33,6 +33,10 @@ class PlayerData:
 @dataclass
 class MatchData:
     match_id: int
+    nombre_temporada: str
+    nombre_torneo: str
+    id_temporada: int
+    id_torneo: int
     match_date: str
     marcador: str
     team_heatmap_image_path: str
@@ -40,7 +44,7 @@ class MatchData:
 
 
 @backoff.on_exception(backoff.expo, httpx.HTTPError, max_tries=3)
-def handle_stats_by_season(season_id: int):
+def handle_stats_details(season_id: int, torneo_id: int):
     responseData: List[Dict] = []
 
     season_endpoint = f"{TEAMS_ENDPOINT}/partidos/bytemporadas/?temporadaId={season_id}&page=1&offset=10000"
@@ -66,12 +70,19 @@ def handle_stats_by_season(season_id: int):
             if match_stats_res.status_code != 200:
                 continue
 
+            if match_info["idtorneo"] != torneo_id:
+                continue
+
             match_stats = match_stats_res.json()["data"]
 
             if not match_stats:
                 continue
 
             match_data = MatchData(
+                id_temporada=match_info["idtemporada"],
+                id_torneo=match_info["idtorneo"],
+                nombre_temporada=match_info["temporada_nombre"],
+                nombre_torneo=match_info["torneo_nombre"],
                 marcador=f"{match_info["marcadorequipolocal"]} - {match_info['marcadorequipovisitante']}",
                 match_date=datetime.fromisoformat(match_info["fechapartido"]).strftime(
                     "%d-%m-%Y %H:%M:%S"

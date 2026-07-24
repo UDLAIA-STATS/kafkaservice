@@ -22,5 +22,5 @@ urlpatterns = [
     path("start-video-upload/", StartVideoUploadView.as_view()),
     path("start-analysis/", StartAnalysisView.as_view()),
     path("general-stats/", GeneralStatsView.as_view()),
-    path("get-stats-data/<int:temporada_id>/", GetStatsDataView.as_view()),
+    path("get-stats-data/<int:temporada_id>/<int:torneo_id>/", GetStatsDataView.as_view()),
 ]
