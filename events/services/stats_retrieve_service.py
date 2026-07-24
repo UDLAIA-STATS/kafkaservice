@@ -63,8 +63,8 @@ def handle_general_stats(event: dict):
                 temporada=match_info["temporada_nombre"],
                 resultado=marcador,
                 fecha_analisis=stat["created_at"],
-                fecha_partido=datetime.strptime(
-                    match_info["fechapartido"], "%Y-%m-%d %H:%M:%S"
+                fecha_partido=datetime.fromisoformat(
+                    match_info["fechapartido"]
                 ).strftime("%d-%m-%Y %H:%M:%S"),
                 velocidad_promedio=stat["avg_speed"],
                 distancia_promedio=stat["avg_distance"],
