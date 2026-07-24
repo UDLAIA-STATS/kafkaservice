@@ -44,7 +44,7 @@ def handle_stats_by_season(season_id: int):
     responseData: List[Dict] = []
 
     season_endpoint = f"{TEAMS_ENDPOINT}/partidos/bytemporadas/?temporadaId={season_id}&page=1&offset=10000"
-    stats_endpoint = f"{STATS_ENDPOINT}/events/by_match"
+    stats_endpoint = f"{STATS_ENDPOINT}/events/by-match"
 
     with httpx.Client(timeout=30.0) as client:
         matches_res = client.get(season_endpoint)
@@ -70,7 +70,7 @@ def handle_stats_by_season(season_id: int):
             match_data = MatchData(
                 marcador=f"{match_info["marcadorequipolocal"]} - {match_info['marcadorequipovisita']}",
                 match_date=datetime.strptime(
-                    match_info["fecha"], "%Y-%m-%d %H:%M:%S"
+                    match_info["fechapartido"], "%Y-%m-%d %H:%M:%S"
                 ).strftime("%d-%m-%Y %H:%M:%S"),
                 match_id=match_info["idpartido"],
                 team_heatmap_image_path=match_stats[0]["team_heatmap_image_path"],
