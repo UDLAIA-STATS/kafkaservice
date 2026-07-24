@@ -9,7 +9,8 @@ from events.serializers import (
 )
 import traceback
 
-from events.services.player_stats_retrieve_service import handle_stats_by_season
+from events.services.player_stats_retrieve_service import handle_stats_details
+from events.services.seasons_with_stats_service import handle_stats_by_season
 from events.services.stats_retrieve_service import handle_general_stats
 
 
@@ -138,13 +139,21 @@ class GeneralStatsView(APIView):
                 return Response({"error": str(e)}, status=400)
 
 class GetStatsDataView(APIView):
-    def get(self, request, temporada_id):
+    def get(self, request, temporada_id, torneo_id):
 
         if not temporada_id:
             return Response({"error": "temporada_id es requerido"}, status=400)
 
         try:
-            return Response(data=handle_stats_by_season(temporada_id))
+            return Response(data=handle_stats_details(temporada_id, torneo_id))
+        except ValueError as e:
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=400)
+
+class GetStatsBySeason(APIView):
+    def get(self, request):
+        try:
+            return Response(data=handle_stats_by_season())
         except ValueError as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
