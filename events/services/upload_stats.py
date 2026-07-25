@@ -42,8 +42,8 @@ def handle_upload_stats(event: dict):
         "handle_upload_stats → match_id %s  (type=%s)", match_id, type(match_id)
     )
 
-    filtered_stats = filter_players_by_color(stats, target_color)
-    logger.info(f"Jugadores filtrados: {len(filtered_stats)} de {len(stats)}")
+    # filtered_stats = filter_players_by_color(stats, target_color)
+    logger.info(f"Jugadores filtrados: {len(stats)} de {len(stats)}")
 
     processed_stats = []
 
@@ -62,7 +62,7 @@ def handle_upload_stats(event: dict):
                 logger.error(f"No se encontró partido para match_id {match_id}")
                 return
 
-        for stat in filtered_stats:
+        for stat in stats:
             shirt_number = int(stat.get("shirt_number", 0))
 
             try:
@@ -91,7 +91,7 @@ def handle_upload_stats(event: dict):
                         else:
                             stat["player_id"] = player_id
 
-                    stat["team_color"] = f"[{target_color}]"
+                    # stat["team_color"] = f"[{target_color}]"
                     if partido_data:
                         stat["team"] = partido_data.get("idequipolocal")
                     else:

@@ -94,11 +94,9 @@ def filter_players_by_color(
     for stat in stats:
         team_color = stat.get("team_color")
 
-        # Ahora team_color siempre es una cadena 'R,G,B' (formato unificado)
         if isinstance(team_color, str):
             team_rgb = parse_rgb_string(team_color)
         elif isinstance(team_color, list) and len(team_color) == 3:
-            # Si por casualidad llega como lista, la convertimos a cadena para mantener consistencia
             team_rgb = team_color
             logger.warning("team_color es lista, se esperaba cadena. Convirtiendo internamente.")
         else:
