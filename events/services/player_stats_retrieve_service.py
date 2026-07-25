@@ -29,6 +29,7 @@ class PlayerData:
     distance_km: int
     heatmap_image_path: str
     crop_image_path: str
+    player_movement_trajectories_path: str
 
 
 @dataclass
@@ -42,6 +43,7 @@ class MatchData:
     marcador: str
     team_heatmap_image_path: str
     movement_trajectories_path: str
+    team_color_time_kde_path: str
     players: List[PlayerData]
 
 
@@ -93,6 +95,7 @@ def handle_stats_details(season_id: int, torneo_id: int):
                 match_id=match_info["idpartido"],
                 team_heatmap_image_path=match_stats[0]["team_heatmap_image_path"],
                 movement_trajectories_path=match_stats[0]["movement_trajectories_path"],
+                team_color_time_kde_path=match_stats[0]["team_color_time_kde_path"],
                 players=[
                     PlayerData(
                         analisys_date=stat["analisys_date"],
@@ -108,6 +111,9 @@ def handle_stats_details(season_id: int, torneo_id: int):
                         team_color=stat["team_color"],
                         team_goals=stat["team_goals"],
                         crop_image_path=stat["crop_image_path"],
+                        player_movement_trajectories_path=stat[
+                            "player_movement_trajectories_path"
+                        ],
                     )
                     for stat in match_stats
                 ],

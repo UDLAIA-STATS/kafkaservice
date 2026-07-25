@@ -75,7 +75,7 @@ def handle_upload_stats(event: dict):
                         logger.warning(
                             f"No se encontró jugador para shirt_number {shirt_number}, preservando estado"
                         )
-                        stat["player_id"] = 1
+                        stat["player_id"] = None
                         processed_stats.append(stat)
                     else:
                         player_data = player_response.json()["data"]
@@ -86,7 +86,7 @@ def handle_upload_stats(event: dict):
                                 f"El jugador con shirt_number {shirt_number} "
                                 "no tiene ID, marcando como None"
                             )
-                            stat["player_id"] = 1
+                            stat["player_id"] = None
                             processed_stats.append(stat)
                         else:
                             stat["player_id"] = player_id
@@ -105,12 +105,12 @@ def handle_upload_stats(event: dict):
                 logger.exception(
                     f"Error de red al procesar shirt_number {shirt_number}: {e}"
                 )
-                stat["player_id"] = 1
+                stat["player_id"] = None
             except Exception as e:
                 logger.exception(
                     f"Error inesperado al procesar shirt_number {shirt_number}: {e}"
                 )
-                stat["player_id"] = 1
+                stat["player_id"] = None
 
             processed_stats.append(stat)
 
