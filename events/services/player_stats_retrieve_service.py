@@ -106,7 +106,7 @@ def handle_stats_details(season_id: int, torneo_id: int):
                         player_id=stat["player_id"],
                         player_name=stat["player_name"],
                         shirt_number=stat["shirt_number"],
-                        team=stat["team"],
+                        team=match_info["equipo_local_nombre"],
                         stat_id=stat["stat_id"],
                         team_color=stat["team_color"],
                         team_goals=stat["team_goals"],
