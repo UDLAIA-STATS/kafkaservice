@@ -90,7 +90,7 @@ def handle_stats_details(season_id: int, torneo_id: int):
                 nombre_torneo=match_info["torneo_nombre"],
                 marcador=f"{match_info["marcadorequipolocal"]} - {match_info['marcadorequipovisitante']}",
                 match_date=datetime.fromisoformat(match_info["fechapartido"]).strftime(
-                    "%d-%m-%Y %H:%M:%S"
+                    "%d-%m-%Y %H:%M"
                 ),
                 match_id=match_info["idpartido"],
                 team_heatmap_image_path=match_stats[0]["team_heatmap_image_path"],
