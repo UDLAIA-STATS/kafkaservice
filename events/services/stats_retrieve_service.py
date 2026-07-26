@@ -65,7 +65,7 @@ def handle_general_stats(event: dict):
                 fecha_analisis=stat["created_at"],
                 fecha_partido=datetime.fromisoformat(
                     match_info["fechapartido"]
-                ).strftime("%d-%m-%Y %H:%M:%S"),
+                ).strftime("%d-%m-%Y %H:%M"),
                 velocidad_promedio=stat["avg_speed"],
                 distancia_promedio=stat["avg_distance"],
             )
