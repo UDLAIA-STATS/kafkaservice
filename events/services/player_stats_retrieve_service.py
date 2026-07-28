@@ -16,7 +16,7 @@ STATS_ENDPOINT = config("STATS_ENDPOINT")
 @dataclass
 class PlayerData:
     stat_id: int
-    player_id: int
+    player_id: int | None
     player_name: str
     shirt_number: int
     team: str
