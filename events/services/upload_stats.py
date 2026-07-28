@@ -43,7 +43,7 @@ def handle_upload_stats(event: dict):
     )
 
     # filtered_stats = filter_players_by_color(stats, target_color)
-    logger.info(f"Jugadores filtrados: {len(stats)} de {len(stats)}")
+    logger.info(f"Jugadores recibidos: {len(stats)}")
 
     processed_stats = []
 
@@ -76,7 +76,6 @@ def handle_upload_stats(event: dict):
                             f"No se encontró jugador para shirt_number {shirt_number}, preservando estado"
                         )
                         stat["player_id"] = None
-                        processed_stats.append(stat)
                     else:
                         player_data = player_response.json()["data"]
                         player_id = player_data.get("idjugador")
@@ -87,7 +86,6 @@ def handle_upload_stats(event: dict):
                                 "no tiene ID, marcando como None"
                             )
                             stat["player_id"] = None
-                            processed_stats.append(stat)
                         else:
                             stat["player_id"] = player_id
 
@@ -100,7 +98,6 @@ def handle_upload_stats(event: dict):
                         )
                         stat["team"] = 1
 
-
             except httpx.RequestError as e:
                 logger.exception(
                     f"Error de red al procesar shirt_number {shirt_number}: {e}"
@@ -112,6 +109,8 @@ def handle_upload_stats(event: dict):
                 )
                 stat["player_id"] = None
 
+            # Único punto de append: se ejecuta una sola vez por stat,
+            # sin importar la rama (éxito, sin id, error de red u otra excepción)
             processed_stats.append(stat)
 
         if not processed_stats:
